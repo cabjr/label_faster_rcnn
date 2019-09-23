@@ -91,11 +91,11 @@ if (imgDir is not None and lbl_class is not None):
     for imgName in glob.glob(imgDir+"/*."+imgformat):
         coords = define_rect(cv2.imread(imgName))
         #imgName, x1, y1, x2, y2, class
-        if coords is not None:
+        if coords is not None and len(coords) > 0:
             f = open(file_to_save, "a")
-            f.write(imgName + ", "+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+ str(coords[1][1]) + ","+lbl_class+"\n")
+            f.write(imgName.replace("\\","/") + ","+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+ str(coords[1][1]) + ","+lbl_class+"\n")
             f.close()
             print (imgName + ", "+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+ str(coords[1][1]) + ","+lbl_class+"\n")
-        else:
+        elif coords is None:
             break
     print("Labelling done.")
