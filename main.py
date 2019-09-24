@@ -21,7 +21,6 @@ def define_rect(image):
     ----------
     image: Input image.
     """
-
     clone = image.copy()
     rect_pts = [] # Starting and ending points
     win_name = "image" # Window name
@@ -49,6 +48,7 @@ def define_rect(image):
 
         if key == ord("r"): # Hit 'r' to replot the image
             clone = image.copy()
+            rect_pts = []
 
         elif key == ord("c"): # Hit 'c' to confirm the selection
             break
@@ -68,6 +68,8 @@ parser.add_argument('--mode', type=str, default="append", help='Select "append",
 parser.add_argument('--dir', type=str, default=None, help='Directory of images to label.')
 parser.add_argument('--class_label', type=str, default=None, help='Input the name of the class in the given directory that will be labeled')
 parser.add_argument('--img_format', type=str, default="jpg", help='Image format to search in the directory')
+parser.add_argument('--output_schema', type=str, default="2", help='"1" = imgName, x1, y1, x2, y2, class\n"2" = imgName, width, height, class, xmin, ymin, xmax, ymax\n')
+
 
 #parser.add_argument('--dataset', type=str, default="Pets", help='Dataset you are using.')
 args = parser.parse_args()
@@ -77,6 +79,8 @@ lbl_class = args.class_label
 write_mode = args.mode
 file_to_save = args.file
 imgformat = args.img_format
+outFormat = args.output_schema
+
 if (write_mode=="append"):
     wtype = "a"
 else:
@@ -92,10 +96,16 @@ if (imgDir is not None and lbl_class is not None):
         coords = define_rect(cv2.imread(imgName))
         #imgName, x1, y1, x2, y2, class
         if coords is not None and len(coords) > 0:
-            f = open(file_to_save, "a")
-            f.write(imgName.replace("\\","/") + ","+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+ str(coords[1][1]) + ","+lbl_class+"\n")
-            f.close()
-            print (imgName + ", "+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+ str(coords[1][1]) + ","+lbl_class+"\n")
+            if  outFormat == "1":
+                f = open(file_to_save, "a")
+                f.write(imgName.replace("\\","/") + ","+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+ str(coords[1][1]) + ","+lbl_class+"\n")
+                f.close()
+                print (imgName + ", "+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+ str(coords[1][1]) + ","+lbl_class+"\n")
+            else:
+                f = open(file_to_save, "a")
+                f.write(imgName.replace("\\","/").split("/")[-1] + ","+ str(np.abs(coords[0][0]-coords[1][0])) + ","+ str(np.abs(coords[0][1]-coords[1][1]))+ ","+ lbl_class + ","+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+str(coords[1][1])+"\n")
+                f.close()
+                print (imgName.replace("\\","/").split("/")[-1] + ","+ str(np.abs(coords[0][0]-coords[1][0])) + ","+ str(np.abs(coords[0][1]-coords[1][1]))+ ","+ lbl_class + ","+ str(coords[0][0]) + ","+ str(coords[0][1]) + ","+ str(coords[1][0]) + ","+str(coords[1][1])+"\n")
         elif coords is None:
             break
     print("Labelling done.")
